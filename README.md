@@ -161,9 +161,11 @@ void Queue_Close(Queue *q);
 #endif
 
 #endif /* QUEUE_H */
+```
 
-include/comm.h
+### `include/comm.h`
 
+```c
 #ifndef COMM_H
 #define COMM_H
 
