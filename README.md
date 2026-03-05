@@ -286,29 +286,29 @@ CommStatus Comm_EmulateRx(Comm *comm, const CommMsg *msg);
 What you must implement
 1) src/queue.c
 
-Implement the queue as a ring buffer in bytes, storing messages:
+Implement the queue as a ring buffer in bytes (buffer length that is a power of two could be considered), storing messages:
 
 [uint16_t len][len bytes payload][uint16_t len][payload]...
 
 Notes:
 
-Use dynamic allocation in Queue_Init.
+- Use dynamic allocation in Queue_Init.
 
-Return QUEUE_ERR_FULL if there is not enough contiguous/logical free space.
+- Return QUEUE_ERR_FULL if there is not enough contiguous/logical free space.
 
-For simplicity, you may implement a ring with “wrap handling” by copying in two parts.
+- For simplicity, you may implement a ring with “wrap handling” by copying in two parts.
 
 2) src/comm.c
 
 Implement comm emulation:
 
-Maintain internal TX and RX queues (Queue* tx; Queue* rx;)
+- Maintain internal TX and RX queues (Queue* tx; Queue* rx;)
 
-Comm_Send() serializes header+payload into TX queue.
+- Comm_Send() serializes header+payload into TX queue.
 
-Comm_EmulateRx() serializes into RX queue and triggers callback if present.
+- Comm_EmulateRx() serializes into RX queue and triggers callback if present.
 
-Comm_Receive() reads from RX queue and deserializes.
+- Comm_Receive() reads from RX queue and deserializes.
 
 Example program (src/main.c)
 
@@ -389,37 +389,37 @@ int main(void)
 ```
 Acceptance criteria checklist
 
- Queue_Init/Send/Read/Close implemented and documented.
+ - Queue_Init/Send/Read/Close implemented and documented.
 
- Queue stores variable-length messages correctly.
+ - Queue stores variable-length messages correctly.
 
- Comm_Init/Send/Receive/Close implemented and documented.
+ - Comm_Init/Send/Receive/Close implemented and documented.
 
- Comm_EmulateRx works and is used in main.c.
+ - Comm_EmulateRx works and is used in main.c.
 
- main.c demonstrates send + emulate RX + receive.
+ - main.c demonstrates send + emulate RX + receive.
 
- Optional callback triggers on emulate RX (if implemented).
+ - Optional callback triggers on emulate RX (if implemented).
 
- Clean compilation with warnings enabled.
+ - Clean compilation with warnings enabled.
 
 Notes / Hints (you may include or ignore)
 
-Prefer fixed-width integers (stdint.h).
+- Prefer fixed-width integers (stdint.h).
 
-Keep APIs robust: validate null pointers and size rules.
+- Keep APIs robust: validate null pointers and size rules.
 
-If you choose uint16_t for lengths, document max payload size (65535).
+- If you choose uint16_t for lengths, document max payload size (65535).
 
-For the queue ring buffer, you’ll need a way to detect full/empty and to manage wrap-around.
+- For the queue ring buffer, you’ll need a way to detect full/empty and to manage wrap-around.
 
 Optional extensions (bonus points)
 
-Peek function to read next message length without removing.
+- Peek function to read next message length without removing.
 
-Unit tests (even minimal).
+- Unit tests (even minimal).
 
-Support zero-length payload messages.
+- Support zero-length payload messages.
 
 Good luck!
 
