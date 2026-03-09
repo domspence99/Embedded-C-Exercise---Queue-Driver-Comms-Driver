@@ -2,6 +2,7 @@
 
 CommStatus Comm_Init(Comm **comm, size_t tx_capacity, size_t rx_capacity)
 {
+    //2 queues will be initialised here (tx and rx)
     (void)comm;
     (void)tx_capacity;
     (void)rx_capacity;
