@@ -4,18 +4,18 @@
 #include "comm.h"
 
 
+
 int main(void)
 {
     //Test for queue initialisation
     Queue *q = NULL;
-    QueueStatus st = Queue_Init(&q, 128);
+    Queue_Init(&q, 24);
 
-    if (st == QUEUE_OK){
-        printf("Queue initialized\n");
-    }
-    else {
-        printf("Error: %d",st);
-    }
+    //Test queueSend
+    Queue_Send(q, "12345", 5); //(7 total bytes)
+    Queue_Send(q, "6789", 4); //(6 total bytes)
+    Queue_Send(q, "ABCDE", 5); //(7 total bytes)
+
 
     //Closes queue, frees memory, prevents leaks
     Queue_Close(q);
@@ -23,3 +23,4 @@ int main(void)
     
     return 0;
 }
+

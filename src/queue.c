@@ -1,6 +1,7 @@
 #include "queue.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct Queue
 {
@@ -61,12 +62,81 @@ QueueStatus Queue_Init(Queue **q, size_t capacity)
     return QUEUE_OK;
 }
 
-// Function to send to queue
+// Function to send message to queue
 QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
 {
-    (void)q;
-    (void)data;
-    (void)size;
+    //1. Validate arguments
+    //Ensure queue pointer and data pointer are valid
+    if (q == NULL || data == NULL){
+        return QUEUE_ERR_INVALID_ARG;
+    }
+
+    //2. Calculate required space 
+    // required space is [2 byte header]+[payload bytes] 
+    size_t required = sizeof(uint16_t) + size; //
+
+
+    //3. Check if queue has space (prevents overflow)
+    //Free space = capicity - space already used
+    if (required > (q->capacity - q->count)){
+        printf("Queue FULL\n");
+        return QUEUE_ERR_FULL;
+    }
+
+    //4. WRITING HEADER (payload length)
+    uint16_t msg_len = size;
+
+    //Determine how many bytes available before reaching end of buffer
+    size_t first = q->capacity - q->head;
+    
+    //Write up to size of header
+    if (first > sizeof(uint16_t)){
+        first = sizeof(uint16_t);
+    }
+
+    //copy first part of the header into buffer
+    memcpy(q->buffer + q->head, &msg_len, first);
+    
+    //if header is wrapped around, copy remaining bytes to beginning of buffer
+    memcpy(q->buffer, ((uint8_t*)&msg_len) + first, sizeof(uint16_t) - first);
+
+    //Advance the head pointer (% ensures pointer wraps around)
+    q->head = (q->head + sizeof(uint16_t)) % q->capacity;
+
+
+    //5. WRITING PAYLOAD
+    //Convert void data pointer into byte pointer
+    const uint8_t *bytes = (const uint8_t *)data;
+
+    //Calculate how many payload cycles before reaching end of buffer
+    first = q->capacity - q->head;
+    
+    //If payload fits, limit to copy size
+    if (first > size){
+        first = size;
+    }
+
+    //Copy first part of payload into buffer
+    memcpy(q->buffer + q->head, bytes, first);
+
+    //If payload wraps, copy remaining bits into start of buffer
+    memcpy(q->buffer, bytes + first, size - first);
+
+    //Advance header pointer
+    q->head = (q->head + size) % q->capacity;
+
+    //Update bytes currently stored in queue
+    q->count += required;
+
+
+    //DEBUG OUTPUT
+    printf("Buffer: ");
+    for (size_t i = 0; i < q->capacity; i++){
+        printf("%02X ", q->buffer[i]);
+    }
+    printf("\n");
+    printf("head=%zu tail=%zu count=%zu\n", q->head, q->tail, q->count);
+    
     return QUEUE_OK;
 }
 
