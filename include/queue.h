@@ -80,6 +80,7 @@ void Queue_DebugPrintState(const Queue *q);
 
 void Queue_Debug_TestSend(Queue *q, const void *data, size_t len);
 
+void Queue_Debug_TestRead(Queue *q);
 
 #ifdef __cplusplus
 }

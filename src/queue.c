@@ -211,6 +211,7 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
     *out_size = msg_len;
 
     //DEBUG OUTPUT
+    /*
     printf("Buffer after read: ");
     for (size_t i = 0; i < q->capacity; i++)
     {
@@ -219,7 +220,7 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
     printf("\n");
 
     printf("head=%zu tail=%zu count=%zu\n", q->head, q->tail, q->count);
-
+    */
     //13. return success
     return QUEUE_OK;
 }
@@ -240,31 +241,16 @@ void Queue_Close(Queue *q)
     
 }
 
-//Helper function to print Buffer
-void Queue_DebugPrintBuffer(const Queue *q)
-{
-    if (q == NULL)
-        return;
-
-    printf("Buffer: ");
-
-    for (size_t i = 0; i < q->capacity; i++)
-    {
-        printf("%02X ", q->buffer[i]);
-    }
-
-    printf("\n");
-    printf("head=%zu tail=%zu count=%zu\n", q->head, q->tail, q->count);
-}
-
 //Helper function to print queue object after it has been initialised
 void Queue_DebugPrintState(const Queue *q){
+    //1. Check queue object is there
     if (q == NULL)
     {
         printf("Queue is NULL\n");
         return;
     }
 
+    //2. Print queue struct
     printf("Queue state after initialization:\n");
     printf("Capacity : %zu\n", q->capacity);
     printf("Head     : %zu\n", q->head);
@@ -284,6 +270,27 @@ void Queue_DebugPrintState(const Queue *q){
     printf("\n\n");
 }
 
+//Helper function to print Buffer
+void Queue_DebugPrintBuffer(const Queue *q)
+{
+    //Takes in queue object
+    if (q == NULL)
+        return;
+
+    //Prints out the data in buffer
+    printf("Buffer: ");
+
+    for (size_t i = 0; i < q->capacity; i++)
+    {
+        printf("%02X ", q->buffer[i]);
+    }
+
+    printf("\n");
+    printf("head=%zu tail=%zu count=%zu\n", q->head, q->tail, q->count);
+}
+
+
+//Helper function to send bytes
 void Queue_Debug_TestSend(Queue *q, const void *data, size_t len)
 {
     
@@ -291,9 +298,28 @@ void Queue_Debug_TestSend(Queue *q, const void *data, size_t len)
 
     QueueStatus status = Queue_Send(q, data, len);
 
+    //Check that status of the send is valid
     if (status != QUEUE_OK)
         printf("FAIL (status=%d)\n", status);
     else
         printf("PASS\n");
         Queue_DebugPrintBuffer(q); //print buffer
+}
+
+//Helper function to read bytes (INCOMPLETE)
+void Queue_Debug_TestRead(Queue *q){
+    //DEBUG OUTPUT
+    printf("TEST READ:\n");
+
+    //TODO Check if read returns errors
+
+    printf("Buffer: ");
+
+    for (size_t i = 0; i < q->capacity; i++)
+    {
+        printf("%02X ", q->buffer[i]);
+    }
+    printf("\n");
+
+    printf("head=%zu tail=%zu count=%zu\n\n", q->head, q->tail, q->count);
 }
