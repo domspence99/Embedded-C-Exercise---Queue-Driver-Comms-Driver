@@ -74,6 +74,13 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size);
  */
 void Queue_Close(Queue *q);
 
+void Queue_DebugPrintBuffer(const Queue *q);
+
+void Queue_DebugPrintState(const Queue *q);
+
+void Queue_Debug_TestSend(Queue *q, const void *data, size_t len);
+
+
 #ifdef __cplusplus
 }
 #endif

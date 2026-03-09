@@ -7,28 +7,28 @@
 
 int main(void)
 {
+    //1. QUEUE INITIALISATION
+    //Create queue pointer  
     Queue *q = NULL;
-    Queue_Init(&q, 24);
+    
+    //Initialise queue object q with capacity & set status
+    QueueStatus init_status = Queue_Init(&q, 24);
+    
+    //CHECK INITIALISATION RETURNS STATUS
+    if(init_status != QUEUE_OK){
+        printf("Initialisation: FAILED (error %d)\n", init_status);
+    }
+    else{
+        printf("Initialisation: PASSED\n");
+        Queue_DebugPrintState(q); //print initialised state of q object
+    }
 
-    char buffer[32];
-    size_t received;
+    //2. QUEUE SEND
+    Queue_Debug_TestSend(q, "HELLO", 5);
+    Queue_Debug_TestSend(q, "ABC", 3);
+    Queue_Debug_TestSend(q, "HI", 2);
 
-    Queue_Send(q, "AAAAA", 5);
-    Queue_Send(q, "BBBB", 4);
 
-    Queue_Read(q, buffer, sizeof(buffer), &received);
-    buffer[received] = '\0';
-    printf("Read: %s\n", buffer);
-
-    Queue_Send(q, "CCCCCCCC", 8);
-
-    Queue_Read(q, buffer, sizeof(buffer), &received);
-    buffer[received] = '\0';
-    printf("Read: %s\n", buffer);
-
-    Queue_Read(q, buffer, sizeof(buffer), &received);
-    buffer[received] = '\0';
-    printf("Read: %s\n", buffer);
 
     Queue_Close(q);
 }

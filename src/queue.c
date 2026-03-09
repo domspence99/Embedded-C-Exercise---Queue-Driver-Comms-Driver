@@ -7,9 +7,9 @@ struct Queue
 {
     uint8_t *buffer; // allocated memory
     size_t capacity; // size of buffer
-    size_t head;     // read pos
-    size_t tail;     // write pos
-    size_t count;    // no. of bytes stored
+    size_t head;     
+    size_t tail;     
+    size_t count;    // no. of bytes used
 };
 
 // Function to initialise queue
@@ -48,7 +48,8 @@ QueueStatus Queue_Init(Queue **q, size_t capacity)
     // 6. Assign new created queue in memory
     *q = new_queue;
 
-    /*
+    
+    /* DEBUG OUTPUT:
     printf("Queue struct size: %zu\n", sizeof(Queue));
     printf("Queue capacity: %zu\n", capacity);
     printf("Queue struct addr: %p\n", new_queue);
@@ -237,4 +238,62 @@ void Queue_Close(Queue *q)
     //3. Free memory of queue object structure
     free(q);
     
+}
+
+//Helper function to print Buffer
+void Queue_DebugPrintBuffer(const Queue *q)
+{
+    if (q == NULL)
+        return;
+
+    printf("Buffer: ");
+
+    for (size_t i = 0; i < q->capacity; i++)
+    {
+        printf("%02X ", q->buffer[i]);
+    }
+
+    printf("\n");
+    printf("head=%zu tail=%zu count=%zu\n", q->head, q->tail, q->count);
+}
+
+//Helper function to print queue object after it has been initialised
+void Queue_DebugPrintState(const Queue *q){
+    if (q == NULL)
+    {
+        printf("Queue is NULL\n");
+        return;
+    }
+
+    printf("Queue state after initialization:\n");
+    printf("Capacity : %zu\n", q->capacity);
+    printf("Head     : %zu\n", q->head);
+    printf("Tail     : %zu\n", q->tail);
+    printf("Count    : %zu\n", q->count);
+
+    printf("Buffer contents:\n");
+
+    for (size_t i = 0; i < q->capacity; i++)
+    {
+        printf("%02X ", q->buffer[i]);
+
+        if ((i + 1) % 16 == 0)
+            printf("\n");
+    }
+
+    printf("\n\n");
+}
+
+void Queue_Debug_TestSend(Queue *q, const void *data, size_t len)
+{
+    
+    printf("TEST SEND\nSending %zu bytes: ", len);
+
+    QueueStatus status = Queue_Send(q, data, len);
+
+    if (status != QUEUE_OK)
+        printf("FAIL (status=%d)\n", status);
+    else
+        printf("PASS\n");
+        Queue_DebugPrintBuffer(q); //print buffer
 }
