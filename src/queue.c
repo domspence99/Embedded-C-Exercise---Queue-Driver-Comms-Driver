@@ -130,24 +130,97 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
 
 
     //DEBUG OUTPUT
+    /*
     printf("Buffer: ");
     for (size_t i = 0; i < q->capacity; i++){
         printf("%02X ", q->buffer[i]);
     }
     printf("\n");
     printf("head=%zu tail=%zu count=%zu\n", q->head, q->tail, q->count);
-    
+    */
     return QUEUE_OK;
 }
 
 // Function to read queue
 QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
 {
-    (void)q;
-    (void)out;
-    (void)out_cap;
-    (void)out_size;
-    return QUEUE_ERR_EMPTY;
+    //out - buffer where payload will be copied
+    //out_cap - size of output buffer
+    //out_size - how many bytes were read
+    //1. Validate arguments
+    if (q == NULL || out == NULL || out_size == NULL){
+        return QUEUE_ERR_INVALID_ARG;
+    }
+
+    //2. Check if queue is empty (nothing inside the queue)
+    if (q->count == 0){
+        return QUEUE_ERR_EMPTY;
+    }
+
+    //3. READ HEADER LENGTH
+    //Header size
+    uint16_t msg_len;
+
+    //Determine how many bytes are available before wrap
+    size_t first = q->capacity - q->tail;
+
+    //Limit to header size
+    if (first > sizeof(uint16_t)){  
+        first = sizeof(uint16_t);
+    }
+
+    //Copy first part of header
+    memcpy(&msg_len, q->buffer + q->tail, first);
+
+    //Copy remainder of header (if needed)
+    memcpy(((uint8_t *)&msg_len) + first, q->buffer, sizeof(uint16_t) - first);
+
+    //4. MOVE TAIL PAST HEADER
+    q->tail = (q->tail + sizeof(uint16_t)) % q->capacity;
+
+    //5. CHECK OUTPUT BUFFER SIZE
+    //If buffer can't hold payload, return error
+    if (msg_len > out_cap){
+        return QUEUE_ERR_BUFFER_TOO_SMALL;
+    }
+
+    //6. Read payload
+    //Convert output to a byte pointer
+    uint8_t *bytes = (uint8_t *)out;
+
+    //7. How many payloads fit before wrap
+    first = q->capacity - q->tail;
+    if (first > msg_len){
+        first = msg_len;
+    }
+
+    //8. Copy first part 
+    memcpy(bytes, q->buffer + q->tail, first);
+
+    //9. Copy second part (if needed)
+    memcpy(bytes + first, q->buffer, msg_len - first);
+
+    //10. Advance tail past payload
+    q->tail = (q->tail + msg_len) % q->capacity;
+
+    //11. Reduce amount of bytes inside buffer (removed)
+    q->count -= sizeof(uint16_t) + msg_len;
+
+    //12. Return payload size (how many bytes were read)
+    *out_size = msg_len;
+
+    //DEBUG OUTPUT
+    printf("Buffer after read: ");
+    for (size_t i = 0; i < q->capacity; i++)
+    {
+        printf("%02X ", q->buffer[i]);
+    }
+    printf("\n");
+
+    printf("head=%zu tail=%zu count=%zu\n", q->head, q->tail, q->count);
+
+    //13. return success
+    return QUEUE_OK;
 }
 
 // Function to close queue & prevent memory leaks

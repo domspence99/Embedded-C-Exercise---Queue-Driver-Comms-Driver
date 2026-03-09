@@ -7,20 +7,29 @@
 
 int main(void)
 {
-    //Test for queue initialisation
     Queue *q = NULL;
     Queue_Init(&q, 24);
 
-    //Test queueSend
-    Queue_Send(q, "12345", 5); //(7 total bytes)
-    Queue_Send(q, "6789", 4); //(6 total bytes)
-    Queue_Send(q, "ABCDE", 5); //(7 total bytes)
+    char buffer[32];
+    size_t received;
 
+    Queue_Send(q, "AAAAA", 5);
+    Queue_Send(q, "BBBB", 4);
 
-    //Closes queue, frees memory, prevents leaks
+    Queue_Read(q, buffer, sizeof(buffer), &received);
+    buffer[received] = '\0';
+    printf("Read: %s\n", buffer);
+
+    Queue_Send(q, "CCCCCCCC", 8);
+
+    Queue_Read(q, buffer, sizeof(buffer), &received);
+    buffer[received] = '\0';
+    printf("Read: %s\n", buffer);
+
+    Queue_Read(q, buffer, sizeof(buffer), &received);
+    buffer[received] = '\0';
+    printf("Read: %s\n", buffer);
+
     Queue_Close(q);
-    printf("Queue closed");
-    
-    return 0;
 }
 
