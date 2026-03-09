@@ -16,5 +16,10 @@ int main(void)
     else {
         printf("Error: %d",st);
     }
+
+    //Closes queue, frees memory, prevents leaks
+    Queue_Close(q);
+    printf("Queue closed");
+    
     return 0;
 }

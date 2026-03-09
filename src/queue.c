@@ -80,8 +80,18 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
     return QUEUE_ERR_EMPTY;
 }
 
-// Function to close queue
+// Function to close queue & prevent memory leaks
 void Queue_Close(Queue *q)
 {
-    (void)q;
+    //1. Input validation
+    if (q == NULL) {
+        return;
+    }
+    
+    //2. Free memory of buffer
+    free(q->buffer);
+
+    //3. Free memory of queue object structure
+    free(q);
+    
 }
