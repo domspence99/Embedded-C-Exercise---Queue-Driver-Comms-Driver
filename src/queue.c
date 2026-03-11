@@ -3,11 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/**
- * @struct Queue 
- * @brief Represents the structure of a circular buffer that stores variable
- * length payloads.
- */
 
 struct Queue
 {
@@ -18,11 +13,12 @@ struct Queue
     size_t bytesUsed;    ///< Counter for number of occupied bytes in buffer
 };
 
-// Function to initialise queue
+
 QueueStatus Queue_Init(Queue **q, size_t capacity)
 {
-    // 1. Validate arguments
-    // Check that the address of the q object is not a NULL pointer & that there is a capacitity param 
+    // 1. Validate arguments to
+    // Check that the address of the q object is not a NULL pointer & that there
+    // is a capacitity param 
     if (q == NULL || capacity == 0)
     {
         return QUEUE_ERR_INVALID_ARG;

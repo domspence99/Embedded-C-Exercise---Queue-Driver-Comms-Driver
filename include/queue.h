@@ -35,7 +35,11 @@ typedef struct Queue Queue;
  * @param[out] q         Pointer that will receive allocated queue handle.
  * @param[in]  capacity  Capacity in bytes for internal storage.
  *
- * @return QUEUE_OK on success.
+ * @return 
+ * - QUEUE_OK on success
+ * - QUEUE_ERR_INVALID_ARG if NULL pointers or no capacity supplied 
+ * - QUEUE_ERR_NO_MEMORY if no memory available for strucure object or buffer
+ *  
  */
 QueueStatus Queue_Init(Queue **q, size_t capacity);
 
