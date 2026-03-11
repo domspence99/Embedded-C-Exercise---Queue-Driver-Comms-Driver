@@ -3,13 +3,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * @struct Queue 
+ * @brief Represents the structure of a circular buffer that stores variable
+ * length payloads.
+ */
+
 struct Queue
 {
-    uint8_t *buffer; // allocated memory
-    size_t capacity; // size of buffer
-    size_t head;     
-    size_t tail;     
-    size_t count;    // no. of bytes used
+    uint8_t *buffer; ///< Pointer to the buffer for data storage 
+    size_t capacity; ///< Total size of buffer in bytes
+    size_t head;     ///< Index of head position (write pointer)
+    size_t tail;     ///< Index of tail position (read pointer)
+    size_t bytesUsed;    ///< Counter for number of occupied bytes in buffer
 };
 
 // Function to initialise queue
@@ -43,7 +49,7 @@ QueueStatus Queue_Init(Queue **q, size_t capacity)
     new_queue->capacity = capacity; // set capacity
     new_queue->head = 0;
     new_queue->tail = 0;
-    new_queue->count = 0;
+    new_queue->bytesUsed = 0;
 
     // 6. Assign new created queue in memory
     *q = new_queue;
@@ -57,7 +63,7 @@ QueueStatus Queue_Init(Queue **q, size_t capacity)
     printf("New queue capacity: %zu\n", new_queue->capacity);
     printf("New queue head: %zu\n", new_queue->head);
     printf("New queue head: %zu\n", new_queue->tail);
-    printf("New queue head: %zu\n", new_queue->count);
+    printf("New queue head: %zu\n", new_queue->bytesUsed);
     */
 
     return QUEUE_OK;
@@ -79,7 +85,7 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
 
     //3. Check if queue has space (prevents overflow)
     //Free space = capicity - space already used
-    if (required > (q->capacity - q->count)){
+    if (required > (q->capacity - q->bytesUsed)){
         printf("Queue FULL\n");
         return QUEUE_ERR_FULL;
     }
@@ -127,7 +133,7 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
     q->head = (q->head + size) % q->capacity;
 
     //Update bytes currently stored in queue
-    q->count += required;
+    q->bytesUsed += required;
 
 
     //DEBUG OUTPUT
@@ -137,7 +143,7 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
         printf("%02X ", q->buffer[i]);
     }
     printf("\n");
-    printf("head=%zu tail=%zu count=%zu\n", q->head, q->tail, q->count);
+    printf("head=%zu tail=%zu bytesUsed=%zu\n", q->head, q->tail, q->bytesUsed);
     */
     return QUEUE_OK;
 }
@@ -154,7 +160,7 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
     }
 
     //2. Check if queue is empty (nothing inside the queue)
-    if (q->count == 0){
+    if (q->bytesUsed == 0){
         return QUEUE_ERR_EMPTY;
     }
 
@@ -205,7 +211,7 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
     q->tail = (q->tail + msg_len) % q->capacity;
 
     //11. Reduce amount of bytes inside buffer (removed)
-    q->count -= sizeof(uint16_t) + msg_len;
+    q->bytesUsed -= sizeof(uint16_t) + msg_len;
 
     //12. Return payload size (how many bytes were read)
     *out_size = msg_len;
@@ -219,7 +225,7 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
     }
     printf("\n");
 
-    printf("head=%zu tail=%zu count=%zu\n", q->head, q->tail, q->count);
+    printf("head=%zu tail=%zu bytesUsed=%zu\n", q->head, q->tail, q->bytesUsed);
     */
     //13. return success
     return QUEUE_OK;
@@ -255,7 +261,7 @@ void Queue_DebugPrintState(const Queue *q){
     printf("Capacity : %zu\n", q->capacity);
     printf("Head     : %zu\n", q->head);
     printf("Tail     : %zu\n", q->tail);
-    printf("Count    : %zu\n", q->count);
+    printf("bytesUsed    : %zu\n", q->bytesUsed);
 
     printf("Buffer contents:\n");
 
@@ -286,7 +292,7 @@ void Queue_DebugPrintBuffer(const Queue *q)
     }
 
     printf("\n");
-    printf("head=%zu tail=%zu count=%zu\n", q->head, q->tail, q->count);
+    printf("head=%zu tail=%zu bytesUsed=%zu\n", q->head, q->tail, q->bytesUsed);
 }
 
 
@@ -321,5 +327,5 @@ void Queue_Debug_TestRead(Queue *q){
     }
     printf("\n");
 
-    printf("head=%zu tail=%zu count=%zu\n\n", q->head, q->tail, q->count);
+    printf("head=%zu tail=%zu bytesUsed=%zu\n\n", q->head, q->tail, q->bytesUsed);
 }
