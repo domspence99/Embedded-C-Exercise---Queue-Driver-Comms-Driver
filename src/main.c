@@ -43,7 +43,7 @@ int main(void)
     Queue *q = NULL;
     
     //Initialise queue object q with capacity & set status
-    QueueStatus init_status = Queue_Init(&q, 24);
+    QueueStatus init_status = Queue_Init(&q, 0);
     
     //CHECK INITIALISATION RETURNS STATUS
     if(init_status != QUEUE_OK){
@@ -53,6 +53,8 @@ int main(void)
         printf("Initialisation: PASSED\n");
         Queue_DebugPrintState(q); //print initialised state of q object
     }
+
+    /*
 
     //2. QUEUE SEND & READ
     Queue_Debug_TestSend(q, "HELLO", 5);
@@ -64,6 +66,7 @@ int main(void)
 
 
     //3. CLOSE QUEUE OBJECT TO PREVENT MEMORY LEAKS
+    */
     Queue_Close(q);
 }
 

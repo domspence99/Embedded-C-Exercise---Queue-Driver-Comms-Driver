@@ -1,0 +1,23 @@
+# TESTING STRATEGY
+
+## TESTING QUEUE DRIVER
+
+### 1. TESTING QUEUE INIT
+Cases:
+1. **Supplied a NULL pointer**
+- Expected: QUEUE_ERR_INVALID_ARG;
+- Receieved: QUEUE_ERR_INVALID_ARG 
+- Status: ✅ PASS
+2. **Supplied 0 capacity**
+- Expected: QUEUE_ERR_INVALID_ARG;
+- Received: QUEUE_ERR_INVALID_ARG
+- Status: ✅ PASS
+3. **Can't allocate memory for queue instance**
+- Expected: QUEUE_ERR_NO_MEMORY
+- Received: Don't know how to simulate
+- Status: ⚠️ NOT TESTED
+4. **Can't allocate memory for buffer**
+- Expected: QUEUE_ERR_NO_MEMORY & Queue instance to be cleared
+- Received: Don't know how to simulate
+- Status: ⚠️ NOT TESTED
+
