@@ -16,38 +16,37 @@ struct Queue
 
 QueueStatus Queue_Init(Queue **q, size_t capacity)
 {
-    // 1. Validate arguments to
-    // Check that the address of the q object is not a NULL pointer & that there
-    // is a capacitity param 
+    //1. Validate inputs
     if (q == NULL || capacity == 0)
     {
         return QUEUE_ERR_INVALID_ARG;
     }
-    // 2. Allocate memory for queue structure
-    Queue *new_queue = malloc(sizeof(Queue)); // Create a new que an allocate memory
+    //2. Create a new queue instance
+    Queue *new_queue = malloc(sizeof(Queue)); 
 
-    // 3. Check if memory was allocated
+    //3. Check if memory was allocated
     if (new_queue == NULL)
     {
         return QUEUE_ERR_NO_MEMORY;
     }
 
-    // 4. Allocate memory for buffer of size:capacity
+    //4. Allocate memory for buffer of size:capacity
     new_queue->buffer = malloc(capacity);
-    // 4.1 Check if memory was allocated for buffer
+    
+    //5. Check if memory was allocated for buffer
     if (new_queue->buffer == NULL)
     {
-        free(new_queue); // If malloc fails for buffer, clean up previos malloc
+        free(new_queue); 
         return QUEUE_ERR_NO_MEMORY;
     }
 
-    // 5. Initialise the queue fields
-    new_queue->capacity = capacity; // set capacity
+    //6. Initialise the queue fields
+    new_queue->capacity = capacity; 
     new_queue->head = 0;
     new_queue->tail = 0;
     new_queue->bytesUsed = 0;
 
-    // 6. Assign new created queue in memory
+    //7. Assign new created queue in memory
     *q = new_queue;
 
     
@@ -62,6 +61,7 @@ QueueStatus Queue_Init(Queue **q, size_t capacity)
     printf("New queue head: %zu\n", new_queue->bytesUsed);
     */
 
+    //8. Return success status
     return QUEUE_OK;
 }
 

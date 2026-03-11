@@ -32,6 +32,29 @@ typedef struct Queue Queue;
 /**
  * @brief Create/initialize a queue.
  *
+ * @details The initialisation process is as follows:
+ * 1. Validate arguments
+ * - check that the address of the q object is not a NULL pointer & that a 
+ * capacitity parameter is supplied.
+ * 
+ * 2. Create a new queue instance
+ * - Create a new instance and allocate memory for queue structure.
+ * 
+ * 3. Check if memory was successfully allocated 
+ * 
+ * 4. Allocate memory for buffer with size(capacity)
+ * 
+ * 5. Check if memory was allocated for buffer 
+ * - If not enough memory for buffer, clear the entire instance to prevent a 
+ * memory leak.
+ * 
+ * 6. Initialise the queue fields
+ * 
+ * 7. Asign the newly created queue instance to to the pointer in memory
+ * 
+ * 8. Return success status
+
+ * 
  * @param[out] q         Pointer that will receive allocated queue handle.
  * @param[in]  capacity  Capacity in bytes for internal storage.
  *
