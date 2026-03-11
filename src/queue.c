@@ -30,7 +30,7 @@ QueueStatus Queue_Init(Queue **q, size_t capacity)
         return QUEUE_ERR_NO_MEMORY;
     }
 
-    //4. Allocate memory for buffer of size:capacity
+    //4. Allocate memory for buffer of size:capacity (bytes)
     new_queue->buffer = malloc(capacity);
     
     //5. Check if memory was allocated for buffer
@@ -48,18 +48,6 @@ QueueStatus Queue_Init(Queue **q, size_t capacity)
 
     //7. Assign new created queue in memory
     *q = new_queue;
-
-    
-    /* DEBUG OUTPUT:
-    printf("Queue struct size: %zu\n", sizeof(Queue));
-    printf("Queue capacity: %zu\n", capacity);
-    printf("Queue struct addr: %p\n", new_queue);
-    printf("Buffer addr: %p\n", new_queue->buffer);
-    printf("New queue capacity: %zu\n", new_queue->capacity);
-    printf("New queue head: %zu\n", new_queue->head);
-    printf("New queue head: %zu\n", new_queue->tail);
-    printf("New queue head: %zu\n", new_queue->bytesUsed);
-    */
 
     //8. Return success status
     return QUEUE_OK;
@@ -243,8 +231,7 @@ void Queue_Close(Queue *q)
     
 }
 
-//Helper function to print queue object after it has been initialised
-void Queue_DebugPrintState(const Queue *q){
+void Queue_Debug_PrintInitialBuffer(const Queue *q){
     //1. Check queue object is there
     if (q == NULL)
     {
@@ -261,11 +248,12 @@ void Queue_DebugPrintState(const Queue *q){
 
     printf("Buffer contents:\n");
 
+    //3. Print each byte of buffer
     for (size_t i = 0; i < q->capacity; i++)
     {
         printf("%02X ", q->buffer[i]);
 
-        if ((i + 1) % 16 == 0)
+        if ((i + 1) % 16 == 0) //after 16 bytes create new line
             printf("\n");
     }
 

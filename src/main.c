@@ -42,8 +42,8 @@ int main(void)
     //Create queue pointer  
     Queue *q = NULL;
     
-    //Initialise queue object q with capacity & set status
-    QueueStatus init_status = Queue_Init(&q, 0);
+    //Initialise queue object q with n bytes of capacity & set status
+    QueueStatus init_status = Queue_Init(&q, 10);
     
     //CHECK INITIALISATION RETURNS STATUS
     if(init_status != QUEUE_OK){
@@ -51,7 +51,7 @@ int main(void)
     }
     else{
         printf("Initialisation: PASSED\n");
-        Queue_DebugPrintState(q); //print initialised state of q object
+        Queue_Debug_PrintInitialBuffer(q); 
     }
 
     /*

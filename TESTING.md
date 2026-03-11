@@ -16,8 +16,8 @@ Cases:
 - Expected: QUEUE_ERR_NO_MEMORY
 - Received: Don't know how to simulate
 - Status: ⚠️ NOT TESTED
-4. **Can't allocate memory for buffer**
+4. **Can't allocate memory for buffer (Supplied negative capacity)**
 - Expected: QUEUE_ERR_NO_MEMORY & Queue instance to be cleared
-- Received: Don't know how to simulate
-- Status: ⚠️ NOT TESTED
+- Received: QUEUE_ERR_NO_MEMORY
+- Status: ✅ PASS
 
