@@ -54,6 +54,11 @@ int main(void)
         Queue_Debug_PrintInitialBuffer(q); 
     }
 
+    //2. SEND DATA TO BUFFER
+    const uint8_t payload[] = {0x10, 0x20, 0x30};
+    uint16_t payloadSize = (uint16_t)sizeof(payload);
+
+    printf("%d",Queue_Send(q,payload,payloadSize));
     /*
 
     //2. QUEUE SEND & READ

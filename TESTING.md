@@ -20,4 +20,12 @@ Cases:
 - Expected: QUEUE_ERR_NO_MEMORY & Queue instance to be cleared
 - Received: QUEUE_ERR_NO_MEMORY
 - Status: ✅ PASS
+5. **Supplied with valid pointer & valid capacity**
+- Expected: Initialisation pass message, instance contents and buffer contents
+- Received: Sucess messages
+- Status: ✅ PASS
+
+### TESTING QUEUE SEND
+1. **Supplied with NULL queue argument** 
+
 

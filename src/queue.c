@@ -57,16 +57,15 @@ QueueStatus Queue_Init(Queue **q, size_t capacity)
 QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
 {
     //1. Validate arguments
-    //Ensure queue pointer and data pointer are valid
-    if (q == NULL || data == NULL){
+    if (q == NULL || (data == NULL && size != 0)){
         return QUEUE_ERR_INVALID_ARG;
     }
 
-    //2. Calculate required space 
-    // required space is [2 byte header]+[payload bytes] 
-    size_t required = sizeof(uint16_t) + size; //
+    //2. Calculate required bytes for message [2 byte header]+[payload bytes]
+    size_t required = sizeof(uint16_t) + size; 
+    printf("%zu", required);
 
-
+/** 
     //3. Check if queue has space (prevents overflow)
     //Free space = capicity - space already used
     if (required > (q->capacity - q->bytesUsed)){
@@ -118,7 +117,7 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
 
     //Update bytes currently stored in queue
     q->bytesUsed += required;
-
+*/
 
     //DEBUG OUTPUT
     /*
@@ -129,6 +128,7 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
     printf("\n");
     printf("head=%zu tail=%zu bytesUsed=%zu\n", q->head, q->tail, q->bytesUsed);
     */
+   
     return QUEUE_OK;
 }
 
@@ -218,7 +218,7 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
 // Function to close queue & prevent memory leaks
 void Queue_Close(Queue *q)
 {
-    //1. Input validation
+    //1. Check a valid queue object is provided
     if (q == NULL) {
         return;
     }

@@ -71,6 +71,14 @@ QueueStatus Queue_Init(Queue **q, size_t capacity);
  *
  * The queue must copy the payload bytes into its internal buffer.
  *
+ * @details The queue send message process is as follows:
+ * 1. Valid arguments
+ * - Check for valid queue object and that data is not NULL unless size is 0
+ * 
+ * 2. Calculate required bytes for message
+ * - Required bytes = Header + Payload 
+ * - [2 bytes to represent length of payload][Number of bytes of payload ]
+ * 
  * @param[in] q     Queue handle.
  * @param[in] data  Pointer to bytes to store (may be NULL only if size==0).
  * @param[in] size  Number of bytes to store.
