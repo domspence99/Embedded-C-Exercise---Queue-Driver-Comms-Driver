@@ -28,4 +28,10 @@ Cases:
 ### TESTING QUEUE SEND
 1. **Supplied with NULL queue argument** 
 
+2. **Supplied with NULL data & !0 size arguments** 
 
+3. **Supplied with NULL data & 0 size arguments** 
+
+4. **Supplied with (data + size) > initialised capacity arguments** 
+
+5. Payload size > uint16_t for lengths, document max payload size (65535) ??

@@ -43,7 +43,7 @@ int main(void)
     Queue *q = NULL;
     
     //Initialise queue object q with n bytes of capacity & set status
-    QueueStatus init_status = Queue_Init(&q, 10);
+    QueueStatus init_status = Queue_Init(&q, 7);
     
     //CHECK INITIALISATION RETURNS STATUS
     if(init_status != QUEUE_OK){
@@ -55,10 +55,21 @@ int main(void)
     }
 
     //2. SEND DATA TO BUFFER
-    const uint8_t payload[] = {0x10, 0x20, 0x30};
-    uint16_t payloadSize = (uint16_t)sizeof(payload);
+    //const uint8_t payload[] = {0x10, 0x20, 0x30,0x40,0x50};
+    //const uint8_t payload2[] = {0x10, 0x20, 0x30};
+    const uint8_t payload3[] = {0x10, 0x20};
+    const uint8_t payload4[] = {0x10};
+    //uint16_t payloadSize = (uint16_t)sizeof(payload);
 
-    printf("%d",Queue_Send(q,payload,payloadSize));
+    //printf("%d",Queue_Send(q,payload,payloadSize));
+    //Queue_Debug_PrintInitialBuffer(q);
+    printf("%d",Queue_Send(q,payload4,(uint16_t)sizeof(payload4)));
+    Queue_Debug_PrintInitialBuffer(q);
+    printf("%d",Queue_Send(q,payload3,(uint16_t)sizeof(payload3)));
+    Queue_Debug_PrintInitialBuffer(q);
+    printf("%d",Queue_Send(q,payload4,(uint16_t)sizeof(payload4)));
+    Queue_Debug_PrintInitialBuffer(q);
+
     /*
 
     //2. QUEUE SEND & READ
