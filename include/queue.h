@@ -81,7 +81,7 @@ QueueStatus Queue_Init(Queue **q, size_t capacity);
  * 
  * 3. Check if queue has enough space for next message (prevents overflow)
  * - Free space = capicity of buffer - bytes already used
- * 
+ *  
  * @param[in] q     Queue handle.
  * @param[in] data  Pointer to bytes to store (may be NULL only if size==0).
  * @param[in] size  Number of bytes to store.
