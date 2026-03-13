@@ -58,7 +58,8 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
 {
     //-----------------VALIDATING INPUT-----------------
     //1. Validate arguments
-    if (q == NULL || (data == NULL && size != 0)){
+    if (q == NULL || data == NULL){
+        printf("ERROR: Invalid Arguments\n");
         return QUEUE_ERR_INVALID_ARG;
     }
 
