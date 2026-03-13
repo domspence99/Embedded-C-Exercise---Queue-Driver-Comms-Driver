@@ -56,6 +56,7 @@ QueueStatus Queue_Init(Queue **q, size_t capacity)
 // Function to send message to queue
 QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
 {
+    //-----------------VALIDATING INPUT-----------------
     //1. Validate arguments
     if (q == NULL || (data == NULL && size != 0)){
         return QUEUE_ERR_INVALID_ARG;
@@ -65,89 +66,65 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
     size_t bytesRequired = sizeof(uint16_t) + size;
 
 
-    //3. Check if queue has space (prevents overflow)
-    //Free space = capicity - space already used
-    if (bytesRequired > (q->capacity - q->bytesUsed)){
-        printf("Queue FULL\n");
-        return QUEUE_ERR_FULL;
-    }
-
     //3. Calculate total remaining available bytes (can be at front or end)
     size_t availableBytes = q->capacity - q->bytesUsed; 
     printf("Bytes available: %zu, Bytes required: %zu\n",availableBytes,bytesRequired);
     
+    //4. Check if queue has space (prevents overflow)
+    if (bytesRequired > availableBytes){
+        printf("Queue FULL\n");
+        return QUEUE_ERR_FULL;
+    }
     
-    //WRITING HEADER
-    //Set 2 byte header message 
-    uint16_t header_msg = size;  //2 byte header restricts payloadLength max size to (65535)
+    
+   //-----------------WRITING HEADER -----------------
+    //1. Set 2 byte header message 
+    uint16_t header_msg = size;  
     printf("Header message: %04X\n", header_msg);
     
-    //Number of bytes between head & end of buffer
+    //2. Calculate Number of bytes between head & end of buffer
     size_t availableEndSpace = q->capacity - q->head;
     printf("Bytes available between head & end of buffer: %zu\nBytes of header: %zu\n", availableEndSpace,sizeof(header_msg));
     
-    //If the bytes available between head and end of buffer are greater than the size of the header
-    //We have enough space to put the header (if not availableEndSpace < 2)
     
+    //3. Limit availableEndSpace variable between (0-2)
     if (availableEndSpace > sizeof(header_msg)){
-        availableEndSpace = sizeof(header_msg); //Limits availableEndSpace variable between (0-2)
+        availableEndSpace = sizeof(header_msg); 
     }
 
-    //Copy at the head, availableEndSpace amount of bytes of the header message (0-2) 
-    //Slice 1
+    //4. Copy at the head, availableEndSpace amount of bytes of the header message (0-2) 
     memcpy(q->buffer + q->head, &header_msg, availableEndSpace);
     
-    //Copy at the start of buffer, the remaining header message bytes (0-2)
-    //Slice 2 (only if there wasn't enough available space)
-    //Splits the header message up into seperate bytes (byte 1 and byte 2)
+    //5. Copy at the start of buffer, the remaining header message bytes (0-2)
     memcpy(q->buffer, ((uint8_t*)&header_msg) + availableEndSpace, sizeof(header_msg) - availableEndSpace);
 
-    //Advance the head pointer (% ensures pointer wraps around)
+    //6. Advance the head pointer (% ensures pointer wraps around)
     q->head = (q->head + sizeof(header_msg)) % q->capacity;
 
-    //WRITING PAYLOAD
-    //Convert void data pointer into byte pointer
+   
+    //-----------------WRITING PAYLOAD -----------------
+    //1. Convert void data pointer into byte pointer
     const uint8_t *payloadBytes = (const uint8_t *)data;   
     
-    //Recalculate available endSpace
+    //2. Recalculate available endSpace
     availableEndSpace = q->capacity - q->head;
     
-    //Limit number of bytes to send to size of payload 
+    //3. Limit number of bytes to send to size of payload 
     if(availableEndSpace > size){
         availableEndSpace = size;
     } 
     
-    //At the head, copy availableEndSpace number of bytes from the payLoadBytes pointer
-    //e.e if we have lots of end space, the avEndSpace is set the size of payload
-    // therefore, we copy all to head. 
-    //If the availableEndSpace is less than the size of the payload, the value is already set
-    //At less than the size of the payload, so will only set that amount of bytes from the
-    //Payload bytes pointer at the head.
+    //4. Copy at the head, availableEndSpace amount of bytes of the payload message (0-size)
     memcpy(q->buffer + q->head, payloadBytes, availableEndSpace);  
     
-    //If availableEndSpace is larger than payload, the number of bytes to be copied will be
-    // sizeofpayload - availablespace =0, so nothing is copied
-    //If the availableEndSpace is smaller, we add that amount of remaining byes at the start of the
-    //buffer and we offset the payloadbytes pointer 
+    //5. Copy at the start of buffer, the remaining payload bytes (0-size)
     memcpy(q->buffer, payloadBytes + availableEndSpace, size-availableEndSpace); 
 
-    //Advance the head again 
+    //6. Advance the head index again 
     q->head = (q->head + size) % q->capacity;
 
-    //Update occupied bytes in queue (header+payload)
+    //7. Update occupied bytes in queue (header+payload)
     q->bytesUsed += bytesRequired;
-
-
-    /*    
-    //DEBUG OUTPUT
-    
-    printf("Buffer: ");
-    for (size_t i = 0; i < q->capacity; i++){
-        printf("%02X ", q->buffer[i]);
-    }
-    printf("\n");
-    printf("head=%zu tail=%zu bytesUsed=%zu\n", q->head, q->tail, q->bytesUsed);
-    */
     
     return QUEUE_OK;
 }
