@@ -79,6 +79,7 @@ int main(void)
     Queue_Send(q,payload4,(uint16_t)sizeof(payload4)); //FAILS (Requires 6 bytes, only 4 available)
     Queue_PrintQueueBuffer(q);
 
+    
     //READ
     Queue_Read(q,&output_buffer,outputBufferSize,&bytesRecieved); //Reads first message (adds 1 byte to output & removes 3 bytes from queue)
     printf("Bytes received: %lu\n", bytesRecieved);
@@ -91,6 +92,15 @@ int main(void)
     //OVERWRITE (WRAP AROUND)
     Queue_Send(q,payload4,(uint16_t)sizeof(payload4)); //Sends 6 bytes, wraps back around
     Queue_PrintQueueBuffer(q);
+
+    //READ WRAPS AROUND
+    Queue_Read(q,&output_buffer,outputBufferSize,&bytesRecieved); //Reads second message (overwrites 2 bytes to output buffer & removes 4 bytes from queue)
+    printf("Bytes received: %lu\n", bytesRecieved);
+    Queue_PrintOutputBuffer(output_buffer,outputBufferSize);
+
+    Queue_Read(q,&output_buffer,outputBufferSize,&bytesRecieved); //Reads second message (overwrites 2 bytes to output buffer & removes 4 bytes from queue)
+    printf("Bytes received: %lu\n", bytesRecieved);
+    Queue_PrintOutputBuffer(output_buffer,outputBufferSize);
     
     //4. CLOSE QUEUE OBJECT TO PREVENT MEMORY LEAKS
     Queue_Close(q);

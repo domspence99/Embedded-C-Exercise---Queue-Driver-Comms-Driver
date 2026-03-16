@@ -49,3 +49,32 @@ Cases:
 - Receieved:  
 - Status: ⚠️ NOT TESTED
 
+### TESTING QUEUE SEND & READ (CIRCULAR BUFFER WRAPS CORRECTLY)
+1. **Check writing and reading 1 message**
+- Expected: Read buffer contains payload of write
+- Receieved: Payload contents
+- Status: ✅ PASS
+2. **Check writing to a full buffer**
+- Expected: Fails - buffer full
+- Receieved: Fail - buffer full
+- Status: ✅ PASS
+3. **Check reading from empty buffer**
+- Expected: Fails - buffer empty
+- Receieved: Fail - buffer empty
+- Status: ✅ PASS
+4. **Check overwriting after read**
+- Expected: Sucess - Message wraps around queue buffer
+- Receieved: Success- message wrap around queue buffer
+- Status: ✅ PASS
+5. **Check 2 byte header wraps over 2 individual bytes**
+- Expected: 1st byte of header at end of queue buffer, second byte at the start
+- Receieved: 1st byte of header at end of queue buffer, second byte at the start
+- Status: ✅ PASS
+6. **Check read wraps round buffer**
+- Expected: Entire contents of wrapped write are inside output buffer
+- Receieved: Entire contents of wrapped write are inside output buffer
+- Status: ✅ PASS
+
+
+
+
