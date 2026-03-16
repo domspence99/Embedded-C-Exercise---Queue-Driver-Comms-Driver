@@ -72,7 +72,7 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
     
     //4. Check if queue has space (prevents overflow)
     if (bytesRequired > availableBytes){
-        printf("Queue FULL\n");
+        printf("Queue Send: FAIL (Required bytes: %lu, Available bytes: %lu)\n", bytesRequired, availableBytes);
         return QUEUE_ERR_FULL;
     }
     
@@ -124,7 +124,7 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
     //7. Update occupied bytes in queue (header+payload)
     q->bytesUsed += bytesRequired;
     
-    printf("Queue Send: SUCCESS\n");
+    printf("Queue Send: SUCCESS (Sent %zu bytes)\n", bytesRequired);
     return QUEUE_OK;
 }
 

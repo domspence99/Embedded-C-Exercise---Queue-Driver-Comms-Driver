@@ -41,7 +41,7 @@ int main(void)
     //1. QUEUE INITIALISATION
     //Create queue pointer  
     Queue *q = NULL;
-    size_t queue_capacity = 10;
+    size_t queue_capacity = 16;
     
     //Initialise queue object q with n bytes of capacity & set status
     QueueStatus init_status = Queue_Init(&q, queue_capacity);
@@ -56,50 +56,42 @@ int main(void)
         Queue_PrintQueueBuffer(q); 
     }
 
-    //2. SEND DATA TO BUFFER
-    //const uint8_t payload[] = {0x10, 0x20, 0x30,0x40,0x50};
-    //const uint8_t payload2[] = {0x10, 0x20, 0x30};
-    
-    /*
-    uint8_t payload6[300];
-    for (int i=0;i<300;i++){
-        payload6[i] = i;
-    }
-    */
+    //2. SEND AND READ FROM BUFFER
+    //Variable length messages
+    const uint8_t payload[] = {0x10};
+    const uint8_t payload2[] = {0x11, 0x12};
+    const uint8_t payload3[] = {0x13, 0x14, 0x15};
+    const uint8_t payload4[] = {0x16, 0x17, 0x18, 0x19};
 
-    const uint8_t payload3[] = {0x10, 0x20};
-    const uint8_t payload4[] = {0x40};
-    //uint16_t payloadSize = (uint16_t)sizeof(payload);
-
-    //printf("%d",Queue_Send(q,payload,payloadSize));
-    //Queue_PrintQueueBuffer(q);
-    //printf("%d",Queue_Send(q,payload6,(uint16_t)sizeof(payload6)));
-    //Queue_PrintQueueBuffer(q);
-    Queue_Send(q,payload3,(uint16_t)sizeof(payload3));
-    Queue_PrintQueueBuffer(q);
-    Queue_Send(q,payload4,(uint16_t)sizeof(payload4));
-    Queue_PrintQueueBuffer(q);
-
-    //3. READ X AMOUNT OF BYTES FROM BUFFER
-    //3.1 Create an output buffer to store n(outputBufferSizebytes) bytes
-    size_t outputBufferSize = 10;
-    uint8_t output_buffer[outputBufferSize];
+    //Output buffer initialisation
+    size_t outputBufferSize = queue_capacity; //Output buffer same capacity as queue buffer
+    uint8_t output_buffer[outputBufferSize];  //Create output buffer to store bytes
     memset(output_buffer, 0, outputBufferSize); //Initialize output buffer to 0
     size_t bytesRecieved;
+
+    //SEND
+    Queue_Send(q,payload,sizeof(payload));  //Send 3 bytes
+    Queue_PrintQueueBuffer(q);
+    Queue_Send(q,payload2,(uint16_t)sizeof(payload2)); //Send 4 bytes
+    Queue_PrintQueueBuffer(q);
+    Queue_Send(q,payload3,(uint16_t)sizeof(payload3)); //Send 5 bytes
+    Queue_PrintQueueBuffer(q);
+    Queue_Send(q,payload4,(uint16_t)sizeof(payload4)); //FAILS (Requires 6 bytes, only 4 available)
+    Queue_PrintQueueBuffer(q);
+
+    //READ
+    Queue_Read(q,&output_buffer,outputBufferSize,&bytesRecieved); //Reads first message (adds 1 byte to output & removes 3 bytes from queue)
+    printf("Bytes received: %lu\n", bytesRecieved);
+    Queue_PrintOutputBuffer(output_buffer,outputBufferSize);
+
+    Queue_Read(q,&output_buffer,outputBufferSize,&bytesRecieved); //Reads second message (overwrites 2 bytes to output buffer & removes 4 bytes from queue)
+    printf("Bytes received: %lu\n", bytesRecieved);
+    Queue_PrintOutputBuffer(output_buffer,outputBufferSize);
     
-    //3.2 Call read queue function
-    Queue_Read(q,&output_buffer,outputBufferSize,&bytesRecieved);
-    printf("Bytes received: %lu\n", bytesRecieved);
-    Queue_PrintOutputBuffer(output_buffer,outputBufferSize);
-
-
-
-    Queue_Read(q,&output_buffer,outputBufferSize,&bytesRecieved);
-    printf("Bytes received: %lu\n", bytesRecieved);
-    Queue_PrintOutputBuffer(output_buffer,outputBufferSize);
-    //**For next time, queue is reading, first message, then nothing is changing
-    //Need to remove message from q buffer and read the next message
-        
+    //OVERWRITE (WRAP AROUND)
+    Queue_Send(q,payload4,(uint16_t)sizeof(payload4)); //Sends 6 bytes, wraps back around
+    Queue_PrintQueueBuffer(q);
+    
     //4. CLOSE QUEUE OBJECT TO PREVENT MEMORY LEAKS
     Queue_Close(q);
 }
