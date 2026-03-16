@@ -72,6 +72,7 @@ QueueStatus Queue_Init(Queue **q, size_t capacity);
  * The queue must copy the payload bytes into its internal buffer.
  *
  * @details The queue send message process is as follows:
+ * -----------------VALIDATING INPUT-----------------
  * 1. Validate arguments
  * - Check for valid queue object and that data is not NULL unless size is 0
  * 
@@ -154,7 +155,35 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size);
 
 /**
  * @brief Read (dequeue) the next message payload.
- *
+ * 
+ * @details The read message function works as follows:
+ * 
+ * -----------------VALIDATING INPUT-----------------
+ * 1. Validate arguments
+ * 2. Check if queue is empty
+ * 
+ * -----------------READING HEADER LENGTH -----------------
+ * 1. Create 2 byte variable for header
+ * 2. Determine how many bytes are available between end of buffer and tail
+ * 3. Limit number of bytes to read of the header
+ * 4. Copy n(availableEndSpace) amount of bytes to the header_msg variable at the tail
+ * 5. Copy the rest of the header message bytes (if wrapped at end)
+ * - If there was not enough space at the end of the buffer, the header was wrapped
+ * - therefore, copy the extra header byte from the start of the buffer
+ * 6. Advance the tail past the header (wrap if needed)
+ * 
+ * -----------------READING PAYLOAD BYTES -----------------
+ * 1. Check if output buffer can hold the amount of payload bytes required
+ * 2. Convert void output buffer type to a byte pointer
+ * 3. Limit bytes needed to the size of payload (which has been read earlier)
+ * 4. Copy n(availableEndSpace) amount of bytes into payload output buffer
+ * 5. Copy reamining bytes of payload (at start of queue buffer) into output buffer (if wrapped)
+ * 6. Advance tail past payload
+ * 7. Reduce amount of bytes used inside buffer 
+ * - Leaves read data as garbage values and allows for overwrite
+ * 8. Updates payload size (how many bytes were read)
+ * 9. Return success
+ * 
  * @param[in]     q          Queue handle.
  * @param[out]    out        Destination buffer (may be NULL only if out_cap==0).
  * @param[in]     out_cap    Capacity of destination buffer in bytes.
@@ -179,13 +208,13 @@ void Queue_Close(Queue *q);
  * 
  * @param[in] q Queue instance
  */
-void Queue_Debug_PrintInitialBuffer(const Queue *q);
 
-void Queue_DebugPrintState(const Queue *q);
+//DESCRIBE CREATED FUNCTIONS**
+void Queue_PrintQueueState(const Queue *q);
 
-void Queue_Debug_TestSend(Queue *q, const void *data, size_t len);
+void Queue_PrintQueueBuffer(const Queue *q);
 
-void Queue_Debug_TestRead(Queue *q);
+void Queue_PrintOutputBuffer(uint8_t *buffer, size_t buffer_size);
 
 #ifdef __cplusplus
 }

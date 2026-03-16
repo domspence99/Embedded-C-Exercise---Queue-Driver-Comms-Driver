@@ -6,7 +6,7 @@
 
 struct Queue
 {
-    uint8_t *buffer; ///< Pointer to the buffer for data storage 
+    uint8_t *buffer; ///< Pointer to the buffer for data storage (in bytes)
     size_t capacity; ///< Total size of buffer in bytes
     size_t head;     ///< Index of head position (write pointer)
     size_t tail;     ///< Index of tail position (read pointer)
@@ -69,7 +69,6 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
 
     //3. Calculate total remaining available bytes (can be at front or end)
     size_t availableBytes = q->capacity - q->bytesUsed; 
-    printf("Bytes available: %zu, Bytes required: %zu\n",availableBytes,bytesRequired);
     
     //4. Check if queue has space (prevents overflow)
     if (bytesRequired > availableBytes){
@@ -81,11 +80,9 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
    //-----------------WRITING HEADER -----------------
     //1. Set 2 byte header message 
     uint16_t header_msg = size;  
-    printf("Header message: %04X\n", header_msg);
     
     //2. Calculate Number of bytes between head & end of buffer
     size_t availableEndSpace = q->capacity - q->head;
-    printf("Bytes available between head & end of buffer: %zu\nBytes of header: %zu\n", availableEndSpace,sizeof(header_msg));
     
     
     //3. Limit availableEndSpace variable between (0-2)
@@ -127,15 +124,20 @@ QueueStatus Queue_Send(Queue *q, const void *data, size_t size)
     //7. Update occupied bytes in queue (header+payload)
     q->bytesUsed += bytesRequired;
     
+    printf("Queue Send: SUCCESS\n");
     return QUEUE_OK;
 }
 
 // Function to read queue
 QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
 {
-    //out - buffer where payload will be copied
-    //out_cap - size of output buffer
-    //out_size - how many bytes were read
+    //Arguments:
+    //q (INPUT) - queue instance to read from
+    //*out (OUTPUT) - output buffer to store read bytes
+    //out_cap (INPUT) - size of output buffer (bytes)
+    //*out_size (OUTPUT) - number of bytes read 
+    
+    //-----------------VALIDATING INPUT-----------------
     //1. Validate arguments
     if (q == NULL || out == NULL || out_size == NULL){
         return QUEUE_ERR_INVALID_ARG;
@@ -146,70 +148,61 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
         return QUEUE_ERR_EMPTY;
     }
 
-    //3. READ HEADER LENGTH
-    //Header size
-    uint16_t payloadLength;
+   //-----------------READING HEADER LENGTH -----------------
+    //1. Create 2 byte variable for header
+    uint16_t header_msg;
 
-    //Determine how many bytes are available before wrap
+    //2. Determine how many bytes are available between end of buffer and tail
     size_t availableEndSpace = q->capacity - q->tail;
 
-    //Limit to header size
+    //3. Limit number of bytes to read of the header
     if (availableEndSpace > sizeof(uint16_t)){  
         availableEndSpace = sizeof(uint16_t);
     }
 
-    //Copy header
-    memcpy(&payloadLength, q->buffer + q->tail, availableEndSpace);
+    //4. Copy n(availableEndSpace) amount of bytes to the header_msg variable at the tail
+    memcpy(&header_msg, q->buffer + q->tail, availableEndSpace);
 
-    //Copy payload
-    memcpy(((uint8_t *)&payloadLength) + availableEndSpace, q->buffer, sizeof(uint16_t) - availableEndSpace);
+    //5. Copy the rest of the header message bytes (if wrapped at end)
+    //If there was not enough space at the end of the buffer, the header was wrapped
+    //Therefore, copy the extra header byte from the start of the buffer
+    memcpy(((uint8_t *)&header_msg) + availableEndSpace, q->buffer, sizeof(uint16_t) - availableEndSpace);
 
-    //4. MOVE TAIL PAST HEADER
+    //6. Advance the tail past the header (wrap if needed)
     q->tail = (q->tail + sizeof(uint16_t)) % q->capacity;
 
-    //5. CHECK OUTPUT BUFFER SIZE
-    //If buffer can't hold payload, return error
-    if (payloadLength > out_cap){
+    //-----------------READING PAYLOAD -----------------
+    //1. Check if output buffer can hold the amount of payload bytes required
+    if (header_msg > out_cap){
         return QUEUE_ERR_BUFFER_TOO_SMALL;
     }
 
-    //6. Read payload
-    //Convert output to a byte pointer
-    uint8_t *bytes = (uint8_t *)out;
+    //2. Convert void output buffer type to a byte pointer
+    uint8_t *payloadOutputBytes = (uint8_t *)out;
 
-    //7. How many payloads fit before wrap
+    //3. Limit bytes needed to size of payload (read earlier)
     availableEndSpace = q->capacity - q->tail;
-    if (availableEndSpace > payloadLength){
-        availableEndSpace = payloadLength;
+    if (availableEndSpace > header_msg){
+        availableEndSpace = header_msg;
     }
 
-    //8. Copy availableEndSpace part 
-    memcpy(bytes, q->buffer + q->tail, availableEndSpace);
+    //4. Copy n(availableEndSpace) amount of bytes into payload output buffer at the tail 
+    memcpy(payloadOutputBytes, q->buffer + q->tail, availableEndSpace);
 
-    //9. Copy second part (if needed)
-    memcpy(bytes + availableEndSpace, q->buffer, payloadLength - availableEndSpace);
+    //5. Copy reamining bytes of payload (at start of queue buffer) into output buffer (if wrapped)
+    memcpy(payloadOutputBytes + availableEndSpace, q->buffer, header_msg - availableEndSpace);
 
-    //10. Advance tail past payload
-    q->tail = (q->tail + payloadLength) % q->capacity;
+    //6. Advance tail past payload
+    q->tail = (q->tail + header_msg) % q->capacity;
 
-    //11. Reduce amount of bytes inside buffer (removed)
-    q->bytesUsed -= sizeof(uint16_t) + payloadLength;
+    //7. Reduce amount of bytes used inside buffer 
+    q->bytesUsed -= sizeof(uint16_t) + header_msg;
 
-    //12. Return payload size (how many bytes were read)
-    *out_size = payloadLength;
+    //8. Updates payload size (how many bytes were read)
+    *out_size = header_msg;
 
-    //DEBUG OUTPUT
-    /*
-    printf("Buffer after read: ");
-    for (size_t i = 0; i < q->capacity; i++)
-    {
-        printf("%02X ", q->buffer[i]);
-    }
-    printf("\n");
-
-    printf("head=%zu tail=%zu bytesUsed=%zu\n", q->head, q->tail, q->bytesUsed);
-    */
-    //13. return success
+    //9. Return success
+    printf("Queue Read: SUCCESS\n");
     return QUEUE_OK;
 }
 
@@ -229,21 +222,29 @@ void Queue_Close(Queue *q)
     
 }
 
-void Queue_Debug_PrintInitialBuffer(const Queue *q){
-    //1. Check queue object is there
+void Queue_PrintQueueState(const Queue *q){
+    //1. Check queue object is valid
     if (q == NULL)
     {
         printf("Queue is NULL\n");
         return;
     }
 
-    //2. Print queue struct
-    printf("Queue state after initialization:\n");
-    printf("Capacity : %zu\n", q->capacity);
-    printf("Head     : %zu\n", q->head);
-    printf("Tail     : %zu\n", q->tail);
-    printf("bytesUsed    : %zu\n", q->bytesUsed);
+    //2. Print queue struct state
+    printf("Current queue state:\n");
+    printf("Capacity    : %zu\n", q->capacity);
+    printf("Head        : %zu\n", q->head);
+    printf("Tail        : %zu\n", q->tail);
+    printf("bytesUsed   : %zu\n\n", q->bytesUsed);
+}
 
+void Queue_PrintQueueBuffer(const Queue *q){
+    //1. Check queue object is there
+    if (q == NULL)
+    {
+        printf("Print Buffer: ERROR (Queue is NULL)\n\n");
+        return;
+    }
     printf("Buffer contents:\n");
 
     //3. Print each byte of buffer
@@ -258,56 +259,15 @@ void Queue_Debug_PrintInitialBuffer(const Queue *q){
     printf("\n\n");
 }
 
-//Helper function to print Buffer
-void Queue_DebugPrintBuffer(const Queue *q)
-{
-    //Takes in queue object
-    if (q == NULL)
-        return;
-
-    //Prints out the data in buffer
-    printf("Buffer: ");
-
-    for (size_t i = 0; i < q->capacity; i++)
-    {
-        printf("%02X ", q->buffer[i]);
+void Queue_PrintOutputBuffer(uint8_t *buffer, size_t buffer_size){
+    printf("READ BUFFER:\n");
+    for(size_t i=0;i<buffer_size;i++){
+        printf("%02X ",buffer[i]); 
+        if ((i + 1) % 16 == 0){ //after 16 bytes create new line
+        printf("\n");
+        }
     }
-
-    printf("\n");
-    printf("head=%zu tail=%zu bytesUsed=%zu\n", q->head, q->tail, q->bytesUsed);
+    printf("\n\n");
 }
 
 
-//Helper function to send bytes
-void Queue_Debug_TestSend(Queue *q, const void *data, size_t len)
-{
-    
-    printf("TEST SEND\nSending %zu bytes: ", len);
-
-    QueueStatus status = Queue_Send(q, data, len);
-
-    //Check that status of the send is valid
-    if (status != QUEUE_OK)
-        printf("FAIL (status=%d)\n", status);
-    else
-        printf("PASS\n");
-        Queue_DebugPrintBuffer(q); //print buffer
-}
-
-//Helper function to read bytes (INCOMPLETE)
-void Queue_Debug_TestRead(Queue *q){
-    //DEBUG OUTPUT
-    printf("TEST READ:\n");
-
-    //TODO Check if read returns errors
-
-    printf("Buffer: ");
-
-    for (size_t i = 0; i < q->capacity; i++)
-    {
-        printf("%02X ", q->buffer[i]);
-    }
-    printf("\n");
-
-    printf("head=%zu tail=%zu bytesUsed=%zu\n\n", q->head, q->tail, q->bytesUsed);
-}
