@@ -96,3 +96,30 @@ void Comm_Close(Comm *comm)
     //Close comm
     free(comm);
 }
+
+void Comm_PrintCommState(Comm *comm){
+     //1. Check queue object is valid
+    if (comm == NULL)
+    {
+        printf("Comm is NULL\n");
+        return;
+    }
+
+    //2. Print comm struct state
+    printf("Current tx state:\n");
+    Queue_PrintQueueState(comm->tx);
+    printf("Current tx state:\n");
+    Queue_PrintQueueState(comm->rx);
+
+}
+void Comm_PrintTXBuffer(Comm *comm){
+    printf("TX BUFFER\n");
+    Queue_PrintQueueBuffer(comm->tx);
+}
+
+void Comm_PrintRXBuffer(Comm *comm){
+    printf("RX BUFFER\n");
+    Queue_PrintQueueBuffer(comm->rx);
+}
+
+

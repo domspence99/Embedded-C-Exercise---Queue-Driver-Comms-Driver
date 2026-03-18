@@ -203,17 +203,28 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size);
  */
 void Queue_Close(Queue *q);
 
+
+//---------ADDED HELPER FUNCTIONS---------
+
 /**
- * @brief Helper function to print initial queue object buffer
+ * @brief Helper function to print current state of queue object 
  * 
  * @param[in] q Queue instance
  */
-
-//DESCRIBE CREATED FUNCTIONS**
 void Queue_PrintQueueState(const Queue *q);
 
+/**
+ * @brief Helper function to print contents of queue buffer
+ * 
+ * @param[in] q Queue instance
+ */
 void Queue_PrintQueueBuffer(const Queue *q);
 
+/**
+ * @brief Helper function to print output buffer from queue read
+ * 
+ * @param[in] q Queue instance
+ */
 void Queue_PrintOutputBuffer(uint8_t *buffer, size_t buffer_size);
 
 #ifdef __cplusplus

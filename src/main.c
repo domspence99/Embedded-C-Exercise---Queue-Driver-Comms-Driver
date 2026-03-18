@@ -115,6 +115,10 @@ int main(void)
     size_t rx_capacity = 256;
     printf("COMM INIT:%d\n",Comm_Init(&comm, tx_capacity, rx_capacity));
     
+    Comm_PrintCommState(comm);
+    Comm_PrintRXBuffer(comm);
+    Comm_PrintTXBuffer(comm);
+
     //NEED FUNCTIONS TO PRINT COMM PORT STATE
     Comm_Close(comm);
 

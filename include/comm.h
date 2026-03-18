@@ -111,6 +111,31 @@ void Comm_Close(Comm *comm);
  */
 CommStatus Comm_EmulateRx(Comm *comm, const CommMsg *msg);
 
+
+//---------ADDED HELPER FUNCTIONS---------
+
+/**
+ * @brief Helper function to print current state of comm port 
+ * 
+ * @param[in] q Queue instance
+ */
+void Comm_PrintCommState(Comm *comm);
+
+/**
+ * @brief Helper function to print contents of tx queue buffer 
+ * 
+ * @param[in] q Queue instance
+ */
+void Comm_PrintTXBuffer(Comm *comm);
+
+/**
+ * @brief Helper function to print contents of rx queue buffer 
+ * 
+ * @param[in] q Queue instance
+ */
+void Comm_PrintRXBuffer(Comm *comm);
+
+
 #ifdef __cplusplus
 }
 #endif
