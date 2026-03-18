@@ -1,11 +1,47 @@
 #include "comm.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+//Comm struct contains 2 queue intances, for tx and rx
+struct Comm {
+    Queue *tx;
+    Queue *rx;
+};
 
 CommStatus Comm_Init(Comm **comm, size_t tx_capacity, size_t rx_capacity)
 {
     //2 queues will be initialised here (tx and rx)
-    (void)comm;
-    (void)tx_capacity;
-    (void)rx_capacity;
+    
+    //VALIDATE ARGUMENTS
+    //1. Check that we receive a double pointer to initialise comm struct
+    //2. Check that tx and rx capacity are not 0
+    if (comm == NULL || tx_capacity == 0 || rx_capacity == 0){
+        printf("COMM_ERR_INVALID_ARG\n");
+        return COMM_ERR_INVALID_ARG;
+    }
+
+    //Create space for a new comm instance
+    Comm *new_comm = malloc(sizeof(Comm));
+
+
+    //Initialise 2 queues, tx and rx to the new comm instance
+    QueueStatus txInitStatus = Queue_Init(&new_comm->tx,tx_capacity);
+    QueueStatus rxInitStatus = Queue_Init(&new_comm->rx,rx_capacity);
+
+    //Check that the initialisation of the queues were successful
+    if(txInitStatus != QUEUE_OK){
+        printf("COMM TX QUEUE INITIALISATION ERROR: %d\n", txInitStatus);
+        return COMM_ERR_INVALID_ARG;
+    }
+    else if(rxInitStatus != QUEUE_OK){
+        printf("COMM RX QUEUE INITIALISATION ERROR: %d\n", rxInitStatus);
+        return COMM_ERR_INVALID_ARG;
+    }
+
+    //Update pointer for comm with newly initialised comm
+    *comm = new_comm;
+    printf("COMM Initialisation: PASSED\n");
     return COMM_OK;
 }
 
@@ -48,5 +84,15 @@ CommStatus Comm_EmulateRx(Comm *comm, const CommMsg *msg)
 
 void Comm_Close(Comm *comm)
 {
-    (void)comm;
+    //Close memory allocations to prevent memory leaks
+    if (comm== NULL) {
+        return;
+    }
+
+    //Close queues
+    Queue_Close(comm->tx);
+    Queue_Close(comm->rx);
+    
+    //Close comm
+    free(comm);
 }

@@ -101,8 +101,22 @@ int main(void)
     Queue_Read(q,&output_buffer,outputBufferSize,&bytesRecieved); //Reads second message (overwrites 2 bytes to output buffer & removes 4 bytes from queue)
     printf("Bytes received: %lu\n", bytesRecieved);
     Queue_PrintOutputBuffer(output_buffer,outputBufferSize);
+
+    //TEST WHAT HAPPENS IF READ BUFFER TOO SMALL (IMPLEMENT PEAK FIRST ?)
     
     //4. CLOSE QUEUE OBJECT TO PREVENT MEMORY LEAKS
     Queue_Close(q);
+
+
+
+    //TESTING COMM PORT
+    Comm *comm = NULL; //Create a pointer for comm (contents are null)
+    size_t tx_capacity = 256;
+    size_t rx_capacity = 256;
+    printf("COMM INIT:%d\n",Comm_Init(&comm, tx_capacity, rx_capacity));
+    
+    //NEED FUNCTIONS TO PRINT COMM PORT STATE
+    Comm_Close(comm);
+
 }
 

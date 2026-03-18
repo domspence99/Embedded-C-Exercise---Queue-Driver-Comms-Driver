@@ -25,7 +25,7 @@ Cases:
 - Received: Sucess messages
 - Status: ✅ PASS
 
-### TESTING QUEUE SEND
+### 2. TESTING QUEUE SEND
 1. **Supplied with NULL queue argument** 
 - Expected: QUEUE_ERR_INVALID_ARG;
 - Receieved: QUEUE_ERR_INVALID_ARG 
@@ -49,7 +49,7 @@ Cases:
 - Receieved:  
 - Status: ⚠️ NOT TESTED
 
-### TESTING QUEUE SEND & READ (CIRCULAR BUFFER WRAPS CORRECTLY)
+### 3. TESTING QUEUE SEND & READ (CIRCULAR BUFFER WRAPS CORRECTLY)
 1. **Check writing and reading 1 message**
 - Expected: Read buffer contains payload of write
 - Receieved: Payload contents
