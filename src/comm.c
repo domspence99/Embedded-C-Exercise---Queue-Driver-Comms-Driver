@@ -101,8 +101,41 @@ CommStatus Comm_Receive(Comm *comm,
 
 CommStatus Comm_EmulateRx(Comm *comm, const CommMsg *msg)
 {
-    (void)comm;
-    (void)msg;
+    //EmulateRx simulates bytes arriving from hardware
+    //I.e puts incoming bytes into the rx queue
+    //Almost idential to the comm_send in this instance but pushes data to 
+    //rx queue instead of tx queue
+    
+    //1. Validate arguments
+    if(comm == NULL || msg == NULL){
+        printf("ERROR: Comm EmulateRx Invalid Arguments\n");
+        return COMM_ERR_INVALID_ARG;
+    }
+
+    //2. Calculate capacity (bytes) for new payload
+    size_t payload_capacity = sizeof(msg->command) + sizeof(msg->length) + msg->length;
+    printf("Payload capacity: %zu\n",payload_capacity);
+
+    //3. Create a buffer to store the new payload
+    uint8_t new_payload[payload_capacity];
+
+    //4. Copy the command message bytes into start payload buffer
+    memcpy(new_payload, &msg->command, sizeof(msg->command));
+
+    //5. Copy the length message bytes into payload buffer after command bytes
+    memcpy(new_payload + sizeof(msg->command), &msg->length, sizeof(msg->length));
+
+    //6. Copy the data bytes after the command and length messages into the new payload
+    memcpy(new_payload + sizeof(msg->length) + sizeof(msg->command), msg->data, msg->length);
+    
+    printf("Sending new payload:\n");
+    for(size_t i=0;i<payload_capacity;i++){
+        printf("%02X",new_payload[i]);
+    }
+    printf("\n\n");
+
+    //7. Send the new payload to the rx queue
+    Queue_Send(comm->rx,new_payload,payload_capacity);
     return COMM_OK;
 }
 

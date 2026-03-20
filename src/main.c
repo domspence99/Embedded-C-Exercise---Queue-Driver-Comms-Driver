@@ -136,6 +136,18 @@ int main(void)
     };
     Comm_Send(comm, &tx_msg);
     Comm_PrintTXBuffer(comm);
+    
+    /* Emulate RX arrival (as if hardware received it) */
+    const char *hello = "hello";
+    CommMsg rx_in = {
+        .command = 0x0042,
+        .length  = (uint16_t)strlen(hello),
+        .data    = (const uint8_t*)hello
+    };
+    Comm_EmulateRx(comm, &rx_in);
+    Comm_PrintRXBuffer(comm);
+
+
 
     Comm_Close(comm);
 
