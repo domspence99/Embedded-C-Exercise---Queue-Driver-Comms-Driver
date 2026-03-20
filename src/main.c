@@ -108,18 +108,35 @@ int main(void)
     Queue_Close(q);
 
 
-
     //TESTING COMM PORT
-    Comm *comm = NULL; //Create a pointer for comm (contents are null)
-    size_t tx_capacity = 256;
-    size_t rx_capacity = 256;
-    printf("COMM INIT:%d\n",Comm_Init(&comm, tx_capacity, rx_capacity));
     
-    Comm_PrintCommState(comm);
-    Comm_PrintRXBuffer(comm);
+    //Comm initialisation
+    Comm *comm = NULL; //Create a pointer for comm (contents are null)
+    size_t tx_capacity = 16;
+    size_t rx_capacity = 16;
+    CommStatus comm_init_status = Comm_Init(&comm, tx_capacity, rx_capacity);
+    
+    //Initialisation check
+    if(comm_init_status != COMM_OK){
+        printf("Comm Initialisation: FAILED (error %d)\n", comm_init_status);
+    }
+    else{
+        printf("Comm Initialisation: PASSED\n");
+        Comm_PrintCommState(comm);
+        Comm_PrintRXBuffer(comm);
+        Comm_PrintTXBuffer(comm);
+    }
+
+    /* Send a message (goes to TX queue) */
+    const uint8_t tx_payload[] = {0x10, 0x20, 0x30, 0x40};
+    CommMsg tx_msg = {
+        .command = 0x1234,
+        .length  = (uint16_t)sizeof(tx_payload),
+        .data    = tx_payload
+    };
+    Comm_Send(comm, &tx_msg);
     Comm_PrintTXBuffer(comm);
 
-    //NEED FUNCTIONS TO PRINT COMM PORT STATE
     Comm_Close(comm);
 
 }

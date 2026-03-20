@@ -10,26 +10,22 @@ struct Comm {
 };
 
 CommStatus Comm_Init(Comm **comm, size_t tx_capacity, size_t rx_capacity)
-{
-    //2 queues will be initialised here (tx and rx)
-    
-    //VALIDATE ARGUMENTS
-    //1. Check that we receive a double pointer to initialise comm struct
-    //2. Check that tx and rx capacity are not 0
+{    
+    //1. Validate arguments
     if (comm == NULL || tx_capacity == 0 || rx_capacity == 0){
         printf("COMM_ERR_INVALID_ARG\n");
         return COMM_ERR_INVALID_ARG;
     }
 
-    //Create space for a new comm instance
+    //2. Create space for a new comm instance
     Comm *new_comm = malloc(sizeof(Comm));
 
 
-    //Initialise 2 queues, tx and rx to the new comm instance
+    //3. Initialise 2 queues, tx and rx to the new comm instance
     QueueStatus txInitStatus = Queue_Init(&new_comm->tx,tx_capacity);
     QueueStatus rxInitStatus = Queue_Init(&new_comm->rx,rx_capacity);
 
-    //Check that the initialisation of the queues were successful
+    //4. Check that the initialisation of the queues were successful
     if(txInitStatus != QUEUE_OK){
         printf("COMM TX QUEUE INITIALISATION ERROR: %d\n", txInitStatus);
         return COMM_ERR_INVALID_ARG;
@@ -39,9 +35,8 @@ CommStatus Comm_Init(Comm **comm, size_t tx_capacity, size_t rx_capacity)
         return COMM_ERR_INVALID_ARG;
     }
 
-    //Update pointer for comm with newly initialised comm
+    //5. Update pointer for comm with newly initialised comm
     *comm = new_comm;
-    printf("COMM Initialisation: PASSED\n");
     return COMM_OK;
 }
 
@@ -55,8 +50,37 @@ CommStatus Comm_SetRxCallback(Comm *comm, CommRxCallback cb, void *user_ctx)
 
 CommStatus Comm_Send(Comm *comm, const CommMsg *msg)
 {
-    (void)comm;
-    (void)msg;
+
+    //1. Validate arguments
+    if(comm == NULL || msg == NULL){
+        printf("ERROR: Comm Send Invalid Arguments\n");
+        return COMM_ERR_INVALID_ARG;
+    }
+
+    //2. Calculate capacity (bytes) for new payload
+    size_t payload_capacity = sizeof(msg->command) + sizeof(msg->length) + msg->length;
+
+    //3. Create a buffer to store the new payload
+    uint8_t new_payload[payload_capacity];
+
+    //4. Copy the command message bytes into start payload buffer
+    memcpy(new_payload, &msg->command, sizeof(msg->command));
+
+    //5. Copy the length message bytes into payload buffer after command bytes
+    memcpy(new_payload + sizeof(msg->command), &msg->length, sizeof(msg->length));
+
+    //6. Copy the data bytes after the command and length messages into the new payload
+    memcpy(new_payload + sizeof(msg->length) + sizeof(msg->command), msg->data, msg->length);
+
+    printf("Sending new payload:\n");
+    for(size_t i=0;i<payload_capacity;i++){
+        printf("%02X",new_payload[i]);
+    }
+    printf("\n\n");
+
+    //7. Send the new payload to the tx queue
+    Queue_Send(comm->tx,new_payload,payload_capacity);
+
     return COMM_OK;
 }
 
@@ -101,7 +125,7 @@ void Comm_PrintCommState(Comm *comm){
      //1. Check queue object is valid
     if (comm == NULL)
     {
-        printf("Comm is NULL\n");
+        printf("ERROR: Can't print comm state, comm is NULL\n");
         return;
     }
 
@@ -113,11 +137,19 @@ void Comm_PrintCommState(Comm *comm){
 
 }
 void Comm_PrintTXBuffer(Comm *comm){
+    if (comm == NULL){
+        printf("ERROR: Can't print TX, comm is NULL\n");
+        return;
+    }
     printf("TX BUFFER\n");
     Queue_PrintQueueBuffer(comm->tx);
 }
 
 void Comm_PrintRXBuffer(Comm *comm){
+    if (comm == NULL){
+        printf("ERROR: Can't print RX, comm is NULL\n");
+        return;
+    }
     printf("RX BUFFER\n");
     Queue_PrintQueueBuffer(comm->rx);
 }

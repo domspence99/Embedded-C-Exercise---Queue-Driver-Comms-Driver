@@ -48,7 +48,21 @@ typedef struct Comm Comm;
 
 /**
  * @brief Initialize a comm port emulator.
- *
+ * 
+ * @details The comm port initialisation process is as follows:
+ * - 2 Queues are initialised here, tx and rx
+ * 
+ * 1. Validate arguments
+ * - Check that we receive a double pointer to initialise comm struct
+ * - Check that tx and rx capacity are not 0
+ * 2. Create space for a new comm instance
+ * 3. Initialise 2 queues (tx and rx)
+ * - Using the internal queue functions, initialise tx and rx & assign to 
+ * new comm instance
+ * 4. Check that the initialisation of the queues were successful
+ * 5. Update pointer for comm with newly initialised comm
+ * 6. Return success message
+ * 
  * @param[out] comm          Receives allocated comm handle.
  * @param[in]  tx_capacity   TX queue capacity in bytes.
  * @param[in]  rx_capacity   RX queue capacity in bytes.
@@ -66,10 +80,29 @@ CommStatus Comm_SetRxCallback(Comm *comm, CommRxCallback cb, void *user_ctx);
 
 /**
  * @brief Send a message.
- *
+ * 
+ * @details Implementation of Comm_Send is as follows:
+ * 
  * The driver must serialize:
  *   [command(uint16_t)][length(uint16_t)][payload bytes]
  * into its TX path (queue).
+ * 
+ * This is done by using the internal QueueSend function. QueueSend requires
+ * [payloadLength][payload] however the queue doesn't care what the payload is,
+ * so in the payload we include the command, length (of desired data) and 
+ * desired data. 
+ * [payloadLength][command+length+data]
+ * So this function creates new payload to send as [command+length+data] through
+ * the internal queueSend function
+ * 
+ * 1. Validate inputs
+ * 2. Calculate capacity (bytes) for new payload
+ * 3. Create a buffer to store the new payload
+ * 4. Copy the command message bytes into start of payload buffer
+ * 5. Copy the length message bytes into payload buffer after command bytes
+ * 6. Copy the data bytes after the command and length messages into the new payload
+ * 7. Send the new payload to the tx queue
+ * 8. Return success message
  */
 CommStatus Comm_Send(Comm *comm, const CommMsg *msg);
 
