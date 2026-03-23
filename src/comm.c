@@ -90,21 +90,37 @@ CommStatus Comm_Receive(Comm *comm,
                         size_t out_cap,
                         size_t *out_len)
 {
-    (void)comm;
-    (void)out_cmd;
-    (void)out_data;
-    (void)out_cap;
-    (void)out_len;
+    
+    //1. Validate inputs
+    if(comm==NULL || out_cmd==NULL || out_data==NULL || out_len==NULL){
+        printf("ERROR Comm Receive: Invalid Arguments");
+        return COMM_ERR_INVALID_ARG;
+    }
 
-    return COMM_ERR_EMPTY;
+    //2. Create a buffer to read the message into
+    uint8_t output_buffer[out_cap];
+    memset(output_buffer, 0, out_cap); //Initialize data output buffer to 0
+    
+    //3. Perform QueueRead and copy contents of message into output buffer
+    if(Queue_Read(comm->rx,output_buffer,out_cap,out_len)!=QUEUE_OK){
+        printf("COMM RECEIVE: ERROR\n");
+        return COMM_ERR_IO;
+    };
+
+    //4. Disect the output buffer into command, length & data
+    //4.1 Copy the first 2 bytes to command pointer
+    memcpy(out_cmd, output_buffer, sizeof(uint16_t));
+    //4.2 Copy the next two bytes to length pointer
+    memcpy(out_len, output_buffer+sizeof(uint16_t), sizeof(uint16_t));
+    //4.3 Copy the remaining data bytes for payload
+    memcpy(out_data, output_buffer+(sizeof(uint16_t)*2), out_cap-(sizeof(uint16_t)*2));
+
+    //5. Return success 
+    return COMM_OK;
 }
 
 CommStatus Comm_EmulateRx(Comm *comm, const CommMsg *msg)
 {
-    //EmulateRx simulates bytes arriving from hardware
-    //I.e puts incoming bytes into the rx queue
-    //Almost idential to the comm_send in this instance but pushes data to 
-    //rx queue instead of tx queue
     
     //1. Validate arguments
     if(comm == NULL || msg == NULL){
@@ -128,7 +144,7 @@ CommStatus Comm_EmulateRx(Comm *comm, const CommMsg *msg)
     //6. Copy the data bytes after the command and length messages into the new payload
     memcpy(new_payload + sizeof(msg->length) + sizeof(msg->command), msg->data, msg->length);
     
-    printf("Sending new payload:\n");
+    printf("Emulating new rx payload:\n");
     for(size_t i=0;i<payload_capacity;i++){
         printf("%02X",new_payload[i]);
     }

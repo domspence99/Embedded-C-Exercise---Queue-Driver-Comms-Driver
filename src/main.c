@@ -147,6 +147,18 @@ int main(void)
     Comm_EmulateRx(comm, &rx_in);
     Comm_PrintRXBuffer(comm);
 
+    /* Comm Receive */
+    uint16_t cmd = 0;
+    uint8_t  buf[32];
+    size_t   len = 0;
+
+    //Recieve from comm
+    Comm_Receive(comm, &cmd, buf, sizeof(buf), &len);
+    printf("CMD: %04X\n",cmd);
+    printf("Length: %zu\n",len);
+    for(size_t i =0;i<len;i++){
+        printf("%02X ",buf[i]);
+    }
 
 
     Comm_Close(comm);

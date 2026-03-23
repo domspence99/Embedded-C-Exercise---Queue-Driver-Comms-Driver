@@ -112,6 +112,21 @@ CommStatus Comm_Send(Comm *comm, const CommMsg *msg);
  * Recommended pattern:
  * - Caller provides a payload buffer and capacity.
  * - Driver fills out_cmd/out_len and copies payload into buffer.
+ * 
+ * @details Comm Receive Implementation works as follows:
+ * Queue read obtains the full message:
+ * [length header][payload with command + length header + data payload]
+ * Driver disects the second buffer and sets cmd, length and payload
+ * 
+ * 1. Validate inputs
+ * 2. Create a buffer to read the message into using Queue Read
+ * - [payload with command + length header + data payload]
+ * 3. Perform QueueRead and copy contents of message into output buffer
+ * 4. Disect the output buffer into command, length & data
+ * - Copy the first 2 bytes to command pointer
+ * - Copy the next two bytes to length pointer
+ * - Copy the remaining data bytes for payload
+ * 5. Return success 
  *
  * @param[in]     comm        Comm handle.
  * @param[out]    out_cmd     Receives command.
@@ -137,10 +152,27 @@ void Comm_Close(Comm *comm);
 
 /**
  * @brief Emulate incoming RX data (test hook).
+ * 
+ * @details Implementation of Emulate Rx is as follows:
  *
  * This function simulates that bytes arrived from "hardware" into RX.
  * It should push the serialized message into the RX queue and trigger
  * the RX callback (if implemented).
+ * 
+ * EmulateRx simulates bytes arriving from hardware. 
+ * I.e puts incoming bytes into the rx queue
+ * Almost idential to the comm_send in this instance but pushes data to 
+ * rx queue instead of tx queue
+ * 
+ * 1. Validate inputs
+ * 2. Calculate capacity (bytes) for new payload
+ * 3. Create a buffer to store the new payload
+ * 4. Copy the command message bytes into start of payload buffer
+ * 5. Copy the length message bytes into payload buffer after command bytes
+ * 6. Copy the data bytes after the command and length messages into the new payload
+ * 7. Send the new payload to the rx queue
+ * 8. Return success message
+ * 
  */
 CommStatus Comm_EmulateRx(Comm *comm, const CommMsg *msg);
 

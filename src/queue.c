@@ -202,7 +202,7 @@ QueueStatus Queue_Read(Queue *q, void *out, size_t out_cap, size_t *out_size)
     *out_size = header_msg;
 
     //9. Return success
-    printf("Queue Read: SUCCESS\n");
+    printf("Queue Read: SUCCESS (Read %hu bytes)\n",header_msg);
     return QUEUE_OK;
 }
 
