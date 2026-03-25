@@ -73,6 +73,11 @@ CommStatus Comm_Init(Comm **comm, size_t tx_capacity, size_t rx_capacity);
 
 /**
  * @brief Register an RX callback (bonus).
+ * 
+ * @details
+ * - Assigns the user-defined callback function & arguments to the comm 
+ * instance.
+ * - Called after bytes successfully sent into rx (emulated)
  *
  * If you implement this, call it when RX receives new bytes/message.
  */
