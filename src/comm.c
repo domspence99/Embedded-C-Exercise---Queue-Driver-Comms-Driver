@@ -7,6 +7,10 @@
 struct Comm {
     Queue *tx;
     Queue *rx;
+    CommRxCallback cb; /*Callback function pointer (points to user-defined 
+                        function that is triggered on rx receieve)*/
+    void *user_ctx; //User context (provided as a parameter to the callback function)
+
 };
 
 CommStatus Comm_Init(Comm **comm, size_t tx_capacity, size_t rx_capacity)
@@ -20,6 +24,9 @@ CommStatus Comm_Init(Comm **comm, size_t tx_capacity, size_t rx_capacity)
     //2. Create space for a new comm instance
     Comm *new_comm = malloc(sizeof(Comm));
 
+    //BONUS (Initialise Callback function & arguments)
+    new_comm->cb=NULL;
+    new_comm->user_ctx=NULL;
 
     //3. Initialise 2 queues, tx and rx to the new comm instance
     QueueStatus txInitStatus = Queue_Init(&new_comm->tx,tx_capacity);
@@ -42,9 +49,11 @@ CommStatus Comm_Init(Comm **comm, size_t tx_capacity, size_t rx_capacity)
 
 CommStatus Comm_SetRxCallback(Comm *comm, CommRxCallback cb, void *user_ctx)
 {
-    (void)comm;
-    (void)cb;
-    (void)user_ctx;
+    //Assigning the user-defined callback function & arguments to the comm instance
+    if(comm!=NULL){
+        comm->cb = cb;
+        comm->user_ctx = user_ctx;
+    }
     return COMM_OK;
 }
 
@@ -150,8 +159,14 @@ CommStatus Comm_EmulateRx(Comm *comm, const CommMsg *msg)
     }
     printf("\n\n");
 
+
+
     //7. Send the new payload to the rx queue
-    Queue_Send(comm->rx,new_payload,payload_capacity);
+    //BONUS
+    //Trigger callback function after emulate rx is successful
+    if(Queue_Send(comm->rx,new_payload,payload_capacity)==QUEUE_OK){
+        comm->cb(comm->user_ctx); //Triggers callback function
+    }
     return COMM_OK;
 }
 
